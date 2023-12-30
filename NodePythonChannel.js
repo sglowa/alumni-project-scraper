@@ -1,17 +1,15 @@
-const amqp = require('amqplib')
-const uniqid = require('uniqid')
+// const amqp = require('amqplib')
+import amqp from 'amqplib'
+// const uniqid = require('uniqid')
+import uniqid from 'uniqid'
 
 async function establishChannelToPython () {
-  const connection = await amqp.connect('amqp://localhost:3213')
-  const channel = await connection.createChannel()
-
   const reqQueue = 'node_req_queue'
   const resQueue = 'python_res_queue'
 
+  const connection = await amqp.connect('amqp://localhost:3213')
+  const channel = await connection.createChannel()
   await channel.assertQueue(resQueue)
-  // theres problem with correlationID
-  // its diff for each req-res, so when
-  // so when making req i need to pass also res callback
   const resCbDictionary = {}
   await channel.consume(resQueue, (msg) => {
     try {

@@ -1,6 +1,9 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const { scrapeProfileMain } = require('./scrape-profile')
+// const express = require('express')
+import express from 'express'
+// const bodyParser = require('body-parser')
+import bodyParser from 'body-parser'
+// const { scrapeProfileMain } = require('./scrape-profile')
+import { scrapeProfileMain } from './scrape-profile.js'
 
 const app = express()
 app.use(bodyParser.text({ type: 'text/plain' }))
@@ -18,5 +21,5 @@ app.get('/', (req, res) => {
 // add also get localhost:port/exportCSV - to dl csv
 // add also get localhost:port/cleanDB - to cleanDB
 app.listen(3212, () => {
-  console.log('Server is Listening on 3000')
+  console.log('Server is Listening on 3212')
 })

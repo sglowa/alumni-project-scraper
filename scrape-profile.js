@@ -1,6 +1,6 @@
-import { sendReqToPython } from './NodePythonChannel'
-import { cleanProfileJSON } from './cleanProfileJSON'
-import { saveToDatabase } from './database'
+import { sendReqToPython } from './NodePythonChannel.js'
+import { cleanProfileJSON } from './cleanProfileJSON.js'
+import { saveToDatabase } from './database.js'
 
 /**
  * scrapes data for particular alumnus profile, including location of the ba school
