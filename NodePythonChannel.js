@@ -1,45 +1,56 @@
-// const amqp = require('amqplib')
-import amqp from 'amqplib'
-// const uniqid = require('uniqid')
-import uniqid from 'uniqid'
+import { PythonShell } from 'python-shell'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-async function establishChannelToPython () {
-  const reqQueue = 'node_req_queue'
-  const resQueue = 'python_res_queue'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const pythonScriptPath = path.join(__dirname, '../python/linkedInApi.py')
 
-  const connection = await amqp.connect('amqp://localhost:3213')
-  const channel = await connection.createChannel()
-  await channel.assertQueue(resQueue)
-  const resCbDictionary = {}
-  await channel.consume(resQueue, (msg) => {
-    try {
-      if (msg === 'EXITING') {
-        console.log('Python script is exiting')
-        return
-      }
-      // i can also validate if it is json
-      resCbDictionary[msg.properties.correlationId](msg, connection.close)
-      delete resCbDictionary[msg.properties.correlationId]
-    } catch (error) {
-      console.log('error', error)
+const options = {
+  mode: 'json',
+  pythonOptions: ['-u'],
+  args: [],
+  pythonPath: process.env.PYTHON_PATH
+}
+let pythonReady = false
+let pyshell
+
+function init () {
+  pyshell = new PythonShell(pythonScriptPath, options)
+
+  const callback = msg => {
+    console.log('receiving message', msg)
+    if (msg.initSuccess) {
+      pythonReady = true
+      // pyshell.removeListener('message', callback)
     }
-  }, { noAck: true })
-
-  /**
-      * send data to python and register response callback
-      * @param {string} msg - string message to send to python
-      * @param {requestCallback} reqCb - requestCallback (res msg as arg1)
-      */
-  function sendMessage (msg, reqCb) {
-    const correlationId = uniqid()
-    resCbDictionary.correlationId = reqCb
-    channel.sendToQueue(reqQueue, Buffer.from(msg), {
-      replyTo: resQueue,
-      correlationId
-    })
   }
-  return sendMessage
+  pyshell.on('message', callback)
+  pyshell.on('error', err => console.error(err))
+  pyshell.on('stderr', err => console.error(err))
+  pyshell.on('pythonError', err => console.error(err))
+  pyshell.send({ login: 's9lowacki@gmail.com', password: '2351314', command: 'start' })
 }
 
-const sendReqToPython = establishChannelToPython()
-export { sendReqToPython }
+function reqFetchFromLinkedin (profileId, schoolId) {
+  return new Promise((resolve, reject) => {
+    if (!pythonReady) reject(new Error('python not ready'))
+
+    const callback = (msg) => {
+      if (msg.profileId === profileId) {
+        pyshell.removeListener('message', callback)
+        resolve(msg)
+      }
+    }
+
+    pyshell.once('message', callback)
+    pyshell.send({ profileId, schoolId, command: 'fetch' })
+
+    setTimeout(() => {
+      pyshell.removeListener('message', callback)
+      reject(new Error(`timeout on: ${profileId}`))
+    }, 20000)
+  })
+}
+
+export { reqFetchFromLinkedin, init }
