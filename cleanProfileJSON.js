@@ -73,22 +73,86 @@ const _personalData = {
   public_id: '---'
 }
 
-function cleanProfileJSON (dirtyJson, schoolJson, maDegreeNameExcerpt = '', baDegreeExcerpt = '', phd) {
+/**
+ * Description
+ * @param {Object} object
+ * @param {Object} object.profileJSON
+ * @param {Array} object.schoolsJSONs
+ * @param {import('./typedefs.js').SchoolsSelectors} object.schoolsSelectors
+ * @param {bool} object.phd
+ * @returns {any}
+ */
+function cleanProfileJSON ({ profileJSON, schoolsJSONs, schoolsSelectors, phd }) {
   // personal data
   const parsedPersonalData = { ..._personalData }
   for (const key in parsedPersonalData) {
-    parsedPersonalData[key] = dirtyJson[key] || fieldNotAvailableWarning(key, 'N.A.')
+    parsedPersonalData[key] = profileJSON[key] || fieldNotAvailableWarning(key, 'N.A.')
   }
 
   // edu data
   const parsedEduData = { ..._eduFiltered }
 
   // phd
-  parsedEduData.phd = phd ? 'yes' : 'no'
+  phd = typeof phd === 'boolean'
+    ? phd
+    : typeof phd === 'string'
+      ? phd.toLowerCase() === 'true'
+      : phd.toLowerCase() === 'false'
+        ? false
+        : undefined
+
+  parsedEduData.phd = phd === undefined
+    ? fieldNotAvailableWarning('phd', 'N.A.')
+    : phd
+      ? 'yes'
+      : 'no'
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ma data
+  // schoolsJSONs, schoolsSelectors
+  /*
+    iterate through school selectors,
+    ma will always have uva BUT
+      case a) i put in ma @ uva in fields
+      case b) i don't put it
+    SchoolsSelectors all have school ids
+      (those that dont need to be entered manually)
+    so i iterate by ID...
+    and if uva id is not in masters id list
+    i do it automatically, from the top
+      but what if there's a phd @ uva at the top ?
+      that's okay i just need to give clear instructions that:
+      'if school appears multiple times, give title excerpt to help distinguish'
+      'you dont have to put ma @ uva in the fields IF its the most recent degree this alumnus received @ uva
+        - meaning that, for example, they DO NOT have a phd'
+    ? What if 2 MAs at Uva ? then you need too add urls and title excerpts for both
+   */
+
+  /* i need to get school degree info + school institution info
+  i go through selectors, i iterate schools, get school that matches (selector and ) */ 
   try {
-    const uvaMa = dirtyJson.education
+    schoolsSelectors.maSelectors.forEach((schoolSelector,i)=>{
+        generateEduEntryFromSchoolSelector(schoolSelector, schoolsJSONs, profileJSON, i)
+      }
+    )            
+  } catch (error) {
+    
+  }
+  
+  
+  try {
+    const uvaMa = profileJSON.education
       .find(i => (
         i.school?.objectUrn === 'urn:li:school:15451' &&
         (i.degreeName?.includes(maDegreeNameExcerpt) ?? true)
@@ -104,11 +168,11 @@ function cleanProfileJSON (dirtyJson, schoolJson, maDegreeNameExcerpt = '', baDe
 
   // ba data
   try {
-    const baData = getBaSchool(schoolJson)
+    const baData = extractSchoolData(schoolJson)
     Object.assign(parsedEduData, baData)
 
     // find school that matches urn and [degreeExcerpt]
-    const baSchool = dirtyJson
+    const baSchool = profileJSON
       .education.reverse()
       .find(i => (
         i.schoolUrn?.split(':').pop() === parsedEduData.ba_urn_secondary &&
@@ -122,10 +186,11 @@ function cleanProfileJSON (dirtyJson, schoolJson, maDegreeNameExcerpt = '', baDe
     console.error('could not fetch BA data')
     throw error
   }
+
   // jobs data
   let parsedJobData
   try {
-    parsedJobData = filterJobs(dirtyJson, parsedEduData, numberOfJobsBeforeMA, numberOfJobsAfterMA)
+    parsedJobData = filterJobs(profileJSON, parsedEduData, numberOfJobsBeforeMA, numberOfJobsAfterMA)
   } catch (error) {
     console.error('could not fetch job data')
     throw error
@@ -133,22 +198,74 @@ function cleanProfileJSON (dirtyJson, schoolJson, maDegreeNameExcerpt = '', baDe
   const parsedProfileData = { ...parsedPersonalData, ...parsedEduData, ...parsedJobData }
   return parsedProfileData
 }
+
 /**
  * Description
- * @param {Object} schoolJson dirty json with ba school data
- * @returns {Object} cleaned ba school data
+ * @param {import('./typedefs.js').SchoolSelectors} schoolSelector
+ * @param {Object} schoolsJSONs
+ * @param {Object} profileJSON
+ * @param {number} i
+ * @param {('ba'|'ma')} degreeType
+ * @returns {any}
  */
-function getBaSchool (schoolJson) {
+function generateEduEntryFromSchoolSelector(schoolSelector, schoolsJSONs, profileJSON, i, degreeType) {
+  const entityId = schoolSelector.schoolId // for UvA this is the 4081
+  const degreeTitleExcerpt = schoolSelector.degreeTitleExcerpt
+  const schoolJSON = schoolsJSONs.find(schoolJSON => {
+    return schoolJSON.entiryUrn.includes(entityId)
+  })
+  const schoolData = extractSchoolData(schoolJSON)
+  const eduEntry = profileJSON.education.find(eduEntry => {
+    return (eduEntry.schoolUrn.includes(schoolData.school_id) &&
+      `${eduEntry.degreeName}, ${eduEntry.fieldOfStudy}`.includes(degreeTitleExcerpt))
+  }
+  )
+  const degreeData = extractDegreeData(eduEntry)
+  const eduEntryData = { ...schoolData, ...degreeData }
+  const eduEntryDataRenamedToColumnVals = {}
+  for (const key in eduEntryData) {
+    if (Object.hasOwnProperty.call(eduEntryData, key)) {
+      const val = eduEntryData[key]
+      eduEntryDataRenamedToColumnVals[`${degreeType}_${i + 1}_${key}`] = val
+    }
+  }
+}
+
+/**
+ * Description
+ * @param {Object} eduEntry this is the edu item from edu array from profile json 
+ * @param {('ba'|'ma')} degreeType
+ * @returns {import('./typedefs.js').DiplomaData} 
+ */
+function extractDegreeData(eduEntry, degreeType){
+  /** @type {import('./typedefs.js').DiplomaData} */
+  const degreeData = {}
+  if (typeof schoolJson !== 'object') {
+    console.error('argument is not an object, expecting education item from profile edu array')   
+  }  
+  degreeData.diploma_degree_field = eduEntry.fieldOfStudy ?? fieldNotAvailableWarning(`${degreeData} degree field N.A. : field of study`, 'N.A.')
+  degreeData.diploma_grad_year = eduEntry.timePeriod?.endDate?.year ?? fieldNotAvailableWarning(`${degreeData} degree field N.A. : graduation year`, 'N.A.')
+  degreeData.diploma_grad_month = eduEntry.timePeriod?.endDate?.month ?? fieldNotAvailableWarning(`${degreeData} degree field N.A. : graduation month`, 'N.A.')
+  return degreeData
+}
+
+/**
+ * Description
+ * @param {Object} schoolJson dirty json with school data
+ * @param {('ba'|'ma')}   
+ * @returns {import('./typedefs.js').SchoolData} cleaned school data
+ */
+function extractSchoolData (schoolJson,degreeType) {
+  /** @type {import('./typedefs.js').SchoolData} */
+  const schoolData = {}
   if (typeof schoolJson !== 'object') {
     console.error('argument is not an object, (maybe parse school json first?)')
-    return ''
-  }
-  const baData = { ..._baData }
-  baData.ba_university = schoolJson.name ?? fieldNotAvailableWarning('ba_university', 'N.A.')
-  baData.ba_location = schoolJson.headquarter?.country ?? fieldNotAvailableWarning('ba_location', 'N.A.')
-  baData.ba_urn_primary = schoolJson.entityUrn?.split(':').pop() ?? fieldNotAvailableWarning('ba_urn_primary', 'N.A.') // for linkedin search
-  baData.ba_urn_secondary = schoolJson.school?.split(':').pop() ?? fieldNotAvailableWarning('ba_urn_secondary', 'N.A.') // for search in alumnus profile
-  return baData
+  }  
+  schoolData.uni_name = schoolJson.name ?? fieldNotAvailableWarning(`${degreeType}university`, 'N.A.')
+  schoolData.uni_location = schoolJson.headquarter?.country ?? fieldNotAvailableWarning(`${degreeType}location`, 'N.A.')
+  schoolData.uni_entity_id = schoolJson.entityUrn?.split(':').pop() ?? fieldNotAvailableWarning(`${degreeType}urn_primary`, 'N.A.') // for linkedin search
+  schoolData.uni_school_id = schoolJson.school?.split(':').pop() ?? fieldNotAvailableWarning(`${degreeType}urn_secondary`, 'N.A.') // for search in alumnus profile
+  return schoolData
 }
 /**
  * * extracts company name, job titles and sectors for a given number of jobs before and after MA

@@ -1,9 +1,7 @@
 import { PythonShell } from 'python-shell'
 import path from 'path'
-import { fileURLToPath } from 'url'
+import { __dirname } from './utils.js'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 const pythonScriptPath = path.join(__dirname, '../python/linkedInApi.py')
 
 const options = {
@@ -32,19 +30,35 @@ function init () {
   pyshell.send({ login: 's9lowacki@gmail.com', password: '2351314', command: 'start' })
 }
 
-function reqFetchFromLinkedin (profileId, schoolId) {
+/**
+ * Description
+ * @param {string} profileId
+ * @param {Array} schoolIds each item contains 'schoolId' and 'degreeTitleExcerpt' props
+ * @returns {Promise<import('./typedefs.js').LinkedinFetchResponse>} resolves to profile and school jsons fetched by python script
+ */
+function reqFetchFromLinkedin (profileId, schoolIds) {
+  schoolIds = typeof schoolIds === 'string'
+    ? [schoolIds]
+    : (() => {
+        try {
+          return [...schoolIds]
+        } catch (e) {
+          console.log('schoolIds is not iterable')
+          throw e
+        }
+      })()
   return new Promise((resolve, reject) => {
     if (!pythonReady) reject(new Error('python not ready'))
 
-    const callback = (msg) => {
-      if (msg.profileId === profileId) {
+    const callback = (payload) => {
+      if (payload.profileId === profileId) {
         pyshell.removeListener('message', callback)
-        resolve(msg)
+        resolve(payload)
       }
     }
 
     pyshell.once('message', callback)
-    pyshell.send({ profileId, schoolId, command: 'fetch' })
+    pyshell.send({ profileId, schoolIds, command: 'fetch' })
 
     setTimeout(() => {
       pyshell.removeListener('message', callback)
