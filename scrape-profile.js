@@ -30,11 +30,10 @@ async function scrapeProfileMain (profileUrlPathname, schoolsSelectors, phd, cli
     // but i do it inside cleanProfileJSON fn
     const cleanedJSON = cleanProfileJSON({ profileJSON, schoolsJSONs, schoolsSelectors, phd })
     saveToDatabase(cleanedJSON)
-    const resMsg = `${profileId} saved 
+    const resMsg = `${profileId} saved <br><br>
       ${schoolsWitohutId.length
-        ? `couldn't fetch data for following schools, please add manually 
-        ${schoolsWitohutId.join(`
-        `)}`
+        ? `couldn't fetch data for following schools, please add manually <br>
+        ${schoolsWitohutId.join('<br>')}`
         : ''}`
     clientRes(resMsg)
   } catch (error) {

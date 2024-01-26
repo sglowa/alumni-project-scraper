@@ -186,16 +186,16 @@ function generateEduEntryFromSchoolSelector (schoolSelector, schoolsJSONs, educa
 
 /**
  * Description
- * @param {Object} eduEntry this is the edu item from edu array from profile json 
+ * @param {Object} eduEntry this is the edu item from edu array from profile json
  * @param {('ba'|'ma')} degreeType
- * @returns {import('./typedefs.js').DiplomaData} 
+ * @returns {import('./typedefs.js').DiplomaData}
  */
 function extractDegreeData (eduEntry, degreeType) {
   /** @type {import('./typedefs.js').DiplomaData} */
   const degreeData = {}
   if (typeof eduEntry !== 'object') {
     console.error(`getting ${degreeType} school data : argument is not an object, expecting secelected ${degreeType} education item from profile edu array`)
-  }  
+  }
   degreeData.diploma_degree_field = eduEntry?.fieldOfStudy ?? fieldNotAvailableWarning(`${degreeType} degree field N.A. : field of study`, 'N.A.')
   degreeData.diploma_grad_year = eduEntry?.timePeriod?.endDate?.year ?? fieldNotAvailableWarning(`${degreeType} degree field N.A. : graduation year`, 'N.A.')
   degreeData.diploma_grad_month = eduEntry?.timePeriod?.endDate?.month ?? fieldNotAvailableWarning(`${degreeType} degree field N.A. : graduation month`, 'N.A.')
@@ -205,7 +205,7 @@ function extractDegreeData (eduEntry, degreeType) {
 /**
  * Description
  * @param {Object} schoolJson dirty json with school data
- * @param {('ba'|'ma')}   
+ * @param {('ba'|'ma')}
  * @returns {import('./typedefs.js').SchoolData} cleaned school data
  */
 function extractSchoolData (schoolJson, degreeType) {
@@ -213,7 +213,7 @@ function extractSchoolData (schoolJson, degreeType) {
   const schoolData = {}
   if (typeof schoolJson !== 'object') {
     console.error(`getting ${degreeType} school data : argument is not an object, expecting JSON data for selected ${degreeType} school`)
-  }  
+  }
   schoolData.uni_name = schoolJson?.name ?? fieldNotAvailableWarning(`${degreeType}_university`, 'N.A.')
   schoolData.uni_location = schoolJson?.headquarter?.country ?? fieldNotAvailableWarning(`${degreeType}_location`, 'N.A.')
   schoolData.uni_entity_id = schoolJson?.entityUrn?.split(':').pop() ?? fieldNotAvailableWarning(`${degreeType}_urn_primary`, 'N.A.') // for linkedin search
@@ -286,15 +286,15 @@ function orderJobs (jobsList, jobsCap, columnPrefix) {
       jobColumnIndex = prevJobColumnIndex + 1
       jobTitleColumnIndex = ''
     } else {
-    // check if same company, skip if job (ie company) cap reached
+      // check if same company, skip if job (ie company) cap reached
       jobColumnIndex = company === prevCompany
         ? prevJobColumnIndex
         : prevJobColumnIndex + 1
 
-    // check if another position at same company
+      // check if another position at same company
       jobTitleColumnIndex = company === prevCompany
         ? ++prevJobTitleColumnIndex
-      : prevJobTitleColumnIndex = 1
+        : prevJobTitleColumnIndex = 1
     }
 
     if (jobColumnIndex > jobsCap) { break }
