@@ -4,6 +4,14 @@
 import { fieldNotAvailableWarning } from './utils.js'
 const numberOfJobsAfterMA = +process.env.NO_OF_JOBS_AFTER_MA
 const numberOfJobsBeforeMA = +process.env.NO_OF_JOBS_BEFORE_MA
+const shouldCountPositionsAsSeparateJobs = +process.env.EACH_POSITION_AS_JOB === 1
+  ? true
+  : +process.env.EACH_POSITION_AS_JOB === 0
+      ? false
+      : (() => {
+          console.warn('EACH_POSITION_AS_JOB is not 0/1, setting to default (true)')
+          return true
+        })()
 
 /* const destJSON = {
   firstName: '---',
@@ -31,6 +39,21 @@ const numberOfJobsBeforeMA = +process.env.NO_OF_JOBS_BEFORE_MA
   job3_sector: '---',
   phd: '---'
 } */
+
+const _jobsSchema = (() => {
+  const _jobsSchema = {}
+  for (let i = 1; i <= numberOfJobsAfterMA; i++) {
+    _jobsSchema[`jobAfterMA${i}_company`] = '---'
+    _jobsSchema[`jobAfterMA${i}_sector`] = '---'
+    _jobsSchema[`jobAfterMA${i}_title${shouldCountPositionsAsSeparateJobs ? '' : '1'}`] = '---'
+  }
+  for (let i = 1; i <= numberOfJobsBeforeMA; i++) {
+    _jobsSchema[`jobBeforeMA${i}_company`] = '---'
+    _jobsSchema[`jobBeforeMA${i}_sector`] = '---'
+    _jobsSchema[`jobBeforeMA${i}_title${shouldCountPositionsAsSeparateJobs ? '' : '1'}`] = '---'
+  }
+  return _jobsSchema
+})()
 
 /* const _jobsFiltered = {
   jobBeforeMA_title: '---', // The latest job title [before obtaing the MA degree]
@@ -139,7 +162,8 @@ function cleanProfileJSON ({ profileJSON, schoolsJSONs, schoolsSelectors, phd })
     console.error('could not fetch job data')
     throw error
   }
-  const parsedProfileData = { ...parsedPersonalData, ...parsedEduData, ...parsedJobData }
+  const parsedJobDataReadyForExport = { ..._jobsSchema, ...parsedJobData }
+  const parsedProfileData = { ...parsedPersonalData, ...parsedEduData, ...parsedJobDataReadyForExport }
   return parsedProfileData
 }
 
@@ -225,23 +249,27 @@ function extractSchoolData (schoolJson, degreeType) {
  */
 function filterJobs (
   { experience },
-  { ma_grad_year: maGradYear, ma_grad_month: maGradMonth },
+  { ma_1_diploma_grad_year: maGradYear, ma_1_diploma_grad_month: maGradMonth },
   numberOfJobsBeforeMA,
   numberOfJobsAfterMA) {
-  maGradMonth = parseInt(maGradMonth)
-  maGradYear = parseInt(maGradYear)
-  if (isNaN(maGradMonth)) throw new Error('month is not a number')
-  if (isNaN(maGradYear)) throw new Error('year is not a number')
+  const maGradYearInt = parseInt(maGradYear)
+  let maGradMonthInt = parseInt(maGradMonth)
+  if (isNaN(maGradYearInt)) throw new Error('ma grad year is not a number')
+  if (isNaN(maGradMonthInt)) {
+    console.warn('ma grad month is not a number. Assuming June')
+    maGradMonthInt = 6
+  }
 
-  const oldestJobAfterMaIndex = experience.find(job => {
+  // first meaning oldest, ie the first job they got after graduation
+  const firstJobAfterMaIndex = experience.findIndex(job => {
     const startYear = job.timePeriod.startDate.year
     const startMonth = job?.timePeriod?.startDate?.month ?? 1
     const jobStartDate = new Date(startYear, startMonth - 1) // month index starts from 0
-    const maDegreeEndDate = new Date(maGradYear, maGradMonth - 1)
+    const maDegreeEndDate = new Date(maGradYearInt, maGradMonthInt - 1)
     return jobStartDate < maDegreeEndDate
-  }) - 1
-  const jobsBeforeMa = experience.slice(oldestJobAfterMaIndex)
-  const jobsAfterMa = experience.slice(0, oldestJobAfterMaIndex)
+  })
+  const jobsBeforeMa = experience.slice(firstJobAfterMaIndex)
+  const jobsAfterMa = experience.slice(0, firstJobAfterMaIndex)
 
   const orderedJobsBeforeMa = orderJobs(jobsBeforeMa, numberOfJobsBeforeMA, 'jobBeforeMA')
   const orderedJobsAfterMa = orderJobs(jobsAfterMa, numberOfJobsAfterMA, 'jobAfterMA')
@@ -261,24 +289,31 @@ function orderJobs (jobsList, jobsCap, columnPrefix) {
   const orderedJobs = {}
   let prevCompany = ''
   let prevJobColumnIndex = 0
-  let prevJobTitleColumnIndex = 0
+  let prevJobTitleColumnIndex = 1
 
-  if (isNaN(jobsCap)) { throw new Error('jobs after MA cap is NaN. check your .env file') }
+  if (isNaN(+jobsCap)) { throw new Error(`'${columnPrefix} cap' is not a number.\n(check your .env file)\n${jobsCap}`) }
   for (let index = 0; index < jobsList.length; index++) {
     const job = jobsList[index]
     const company = job.companyName
 
+    let jobColumnIndex
+    let jobTitleColumnIndex
+    if (shouldCountPositionsAsSeparateJobs) {
+      jobColumnIndex = prevJobColumnIndex + 1
+      jobTitleColumnIndex = ''
+    } else {
     // check if same company, skip if job (ie company) cap reached
-    const jobColumnIndex = company !== prevCompany
-      ? prevJobColumnIndex++
-      : prevJobColumnIndex
-
-    if (jobColumnIndex > jobsCap) { break }
+      jobColumnIndex = company === prevCompany
+        ? prevJobColumnIndex
+        : prevJobColumnIndex + 1
 
     // check if another position at same company
-    const jobTitleColumnIndex = company === prevCompany
-      ? prevJobTitleColumnIndex++
+      jobTitleColumnIndex = company === prevCompany
+        ? ++prevJobTitleColumnIndex
       : prevJobTitleColumnIndex = 1
+    }
+
+    if (jobColumnIndex > jobsCap) { break }
 
     // extract job and title
     const jobTitle = job.title
@@ -291,8 +326,9 @@ function orderJobs (jobsList, jobsCap, columnPrefix) {
     const columnName = '' + columnPrefix + jobColumnIndex
     if (jobColumnIndex !== prevJobColumnIndex) { // add company, title, sector to filteredJobs, return
       orderedJobs[`${columnName}_company`] = company ?? fieldNotAvailableWarning('job company', 'N.A.')
-      orderedJobs[`${columnName}_title${jobTitleColumnIndex}`] = jobTitle ?? fieldNotAvailableWarning('job title', 'N.A.')
       orderedJobs[`${columnName}_sector`] = sector ?? fieldNotAvailableWarning('job sector', 'N.A.')
+      orderedJobs[`${columnName}_title${jobTitleColumnIndex}`] = jobTitle ?? fieldNotAvailableWarning('job title', 'N.A.')
+      prevJobColumnIndex = jobColumnIndex
       console.debug(`new job item added (new position at new company)
         company: ${company}
         title: ${jobTitle}
