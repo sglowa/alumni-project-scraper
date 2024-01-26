@@ -1,0 +1,167 @@
+{
+    "summary": "Graduate of College with a BA in History.",
+    "industryName": "Museums & Institutions",
+    "lastName": "Doe",
+    "locationName": "United States",
+    "student": false,
+    "geoCountryName": "United States",
+    "geoCountryUrn": "urn:li:fs_geo:103644278",
+    "geoLocationBackfilled": false,
+    "elt": true,
+    "industryUrn": "urn:li:fs_industry:37",
+    "firstName": "Joe",
+    "entityUrn": "urn:li:fs_profile:ACoAAC-5KNsB1Pa0OSW6KnEBMwvMtxMYpzAuJ9o",
+    "geoLocation": {
+        "geoUrn": "urn:li:fs_geo:102571732"
+    },
+    "geoLocationName": "New York, New York",
+    "location": {
+        "basicLocation": {
+            "📗countryCode": "us"
+        }
+    },
+    "headline": "MA Archival & Information Studies Student at UvA",
+    "profile_id": "adgradsjicamdbfpdao",
+    "profile_urn": "urn:li:fs_miniProfile:adgradsjicamdbfpdao",
+    "member_urn": "urn:li:member:458373149857",
+    "public_id": "joedoe",
+    "experience": [
+        {
+            "locationName": "City A",
+            "entityUrn": "urn:li:fs_position:(grwbfuadjkgnfasoidfnadg)",
+            "geoLocationName": "New York, United States",
+            "geoUrn": "urn:li:fs_geo:102331196",
+            "companyName": "Copmany A",
+            "timePeriod": {
+                "endDate": {
+                    "month": 1,
+                    "year": 2022
+                },
+                "startDate": {
+                    "month": 1,
+                    "year": 2022
+                }
+            },
+            "company": {
+                "employeeCountRange": {
+                    "start": 1001,
+                    "end": 5000
+                },
+                "industries": [
+                    "Higher Education"
+                ]
+            },
+            "title": "Administrative Assistant",
+            "region": "urn:li:fs_region:(us,0)",
+            "companyUrn": "urn:li:fs_miniCompany:43144523",
+            "companyLogoUrl": "https://media.licdn.com/dms/image/524635qefgw5rs/company-logo_"
+        },
+        {
+            "locationName": "New York, United States",
+            "entityUrn": "urn:li:fs_position:(y25t34qregeth4q5erg54w)",
+            "geoLocationName": "New York, United States",
+            "geoUrn": "urn:li:fs_geo:102201453",
+            "companyName": "Company B",
+            "timePeriod": {
+                "endDate": {
+                    "month": 8,
+                    "year": 2022
+                },
+                "startDate": {
+                    "month": 6,
+                    "year": 2021
+                }
+            },
+            "title": "Volunteer",
+            "region": "urn:li:fs_region:(us,0)"
+        },
+        {
+            "locationName": "New York, United States",
+            "entityUrn": "urn:li:fs_position:(gqefh89134qrf89rehg09q34g)",
+            "geoLocationName": "New York, United States",
+            "geoUrn": "urn:li:fs_geo:5461352425",
+            "companyName": "Copmany C",
+            "timePeriod": {
+                "endDate": {
+                    "month": 7,
+                    "year": 2022
+                },
+                "startDate": {
+                    "month": 6,
+                    "year": 2021
+                }
+            },
+            "company": {
+                "employeeCountRange": {
+                    "start": 10001
+                },
+                "industries": [
+                    "Retail"
+                ]
+            },
+            "title": "Sales Associate",
+            "region": "urn:li:fs_region:(us,0)",
+            "companyUrn": "urn:li:fs_miniCompany:243164",
+            "companyLogoUrl": "https://media.licdn.com/dms/image/1346245tqr245/company-logo_"
+        }
+    ],
+    "education": [
+        {
+            "entityUrn": "urn:li:fs_education:(143fqrtwh45gerwgrea)",
+            "school": {
+                "objectUrn": "urn:li:school:15451",
+                "entityUrn": "urn:li:fs_miniSchool:15451",
+                "active": true,
+                "schoolName": "University of Amsterdam",
+                "trackingId": "5143qwaewh45gera",
+                "logoUrl": "https://media.licdn.com/dms/image/C4E0BAQEfHBj_we-_kw/company-logo_"
+            },
+            "timePeriod": {
+                "endDate": {
+                    "month": 1,
+                    "year": 2020
+                },
+                "startDate": {
+                    "month": 9,
+                    "year": 2021
+                }
+            },
+            "degreeName": "Master of Arts - MA",
+            "schoolName": "UvA",
+            "fieldOfStudy": "Archival & Information Studies",
+            "degreeUrn": "urn:li:fs_degree:536",
+            "schoolUrn": "urn:li:fs_miniSchool:15451"
+        },
+        {
+            "entityUrn": "urn:li:fs_education:(gteqrt43512134g145eqra)",
+            "school": {
+                "objectUrn": "urn:li:school:64235q2",
+                "entityUrn": "urn:li:fs_miniSchool:18933",
+                "active": true,
+                "schoolName": "Hunter College",
+                "trackingId": "C80zHNpCTb6ak+M+xGz+HQ==",
+                "logoUrl": "https://media.licdn.com/dms/image/D4D0BAQFogWwnz8wJ7Q/company-logo_"
+            },
+            "timePeriod": {
+                "endDate": {
+                    "month": 12,
+                    "year": 2021
+                },
+                "startDate": {
+                    "month": 8,
+                    "year": 2019
+                }
+            },
+            "degreeName": "BA",
+            "schoolName": "A College",
+            "fieldOfStudy": "History",
+            "schoolUrn": "urn:li:fs_miniSchool:41355123"
+        }
+    ],
+    "languages": [],
+    "publications": [],
+    "certifications": [],
+    "volunteer": [],
+    "honors": [],
+    "projects": []
+}
