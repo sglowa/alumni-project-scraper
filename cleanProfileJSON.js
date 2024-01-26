@@ -70,25 +70,7 @@ const _jobsSchema = (() => {
   job3_sector: '---'
 } */
 
-// i dont really need these but im using them as kind of types
-const _eduFiltered = {
-  ma_grad_year: '---',
-  ma_grad_month: '---',
-  ba_university: '---',
-  ba_location: '---',
-  ba_degree: '---',
-  ba_grad_year: '---',
-  phd: '---'
-}
-
-const _baData = {
-  ba_university: '---',
-  ba_location: '---',
-  ba_degree: '---',
-  ba_grad_year: '---'
-}
-
-const _personalData = {
+const _personalDataSchema = {
   firstName: '---',
   lastName: '---',
   infix: '---',
@@ -107,11 +89,13 @@ const _personalData = {
  */
 function cleanProfileJSON ({ profileJSON, schoolsJSONs, schoolsSelectors, phd }) {
   // personal data
-  const parsedPersonalData = { ..._personalData }
+  const parsedPersonalData = { ..._personalDataSchema }
   for (const key in parsedPersonalData) {
     parsedPersonalData[key] = profileJSON[key] || fieldNotAvailableWarning(key, 'N.A.')
   }
-
+  if (typeof parsedPersonalData.location === 'object') { // this could be more elegant but whatever
+    parsedPersonalData.location = parsedPersonalData.location?.basicLocation?.countryCode
+  }
   // edu data
   /** @type {import('./typedefs.js').eduDataRef} */
   let parsedEduData = {}
