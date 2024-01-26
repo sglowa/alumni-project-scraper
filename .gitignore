@@ -1,1 +1,6 @@
 node_modules
+.env
+.eslintrc.json
+temp.js
+sampleData_fake_full.json
+#
