@@ -8,8 +8,9 @@ const options = {
   mode: 'json',
   pythonOptions: ['-u'],
   args: [],
-  pythonPath: process.env.PYTHON_PATH
+  ...(!!process.env.PYTHON_PATH && { pythonPath: process.env.PYTHON_PATH })
 }
+
 let pythonReady = false
 let pyshell
 
@@ -27,7 +28,7 @@ function init () {
   pyshell.on('error', err => console.error(err))
   pyshell.on('stderr', err => console.error(err))
   pyshell.on('pythonError', err => console.error(err))
-  pyshell.send({ login: 's9lowacki@gmail.com', password: '2351314', command: 'start' })
+  pyshell.send({ login: process.env.LINKEDIN_LOGIN, password: process.env.LINKEDIN_PASS, command: 'start' })
 }
 
 /**
