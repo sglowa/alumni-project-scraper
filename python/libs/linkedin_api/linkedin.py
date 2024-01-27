@@ -688,16 +688,30 @@ class Linkedin(object):
         profile["experience"] = experience
 
         # massage [education] data
-        education = data["educationView"]["elements"]
-        for item in education:
-            if "school" in item:
-                if "logo" in item["school"]:
-                    item["school"]["logoUrl"] = item["school"]["logo"][
-                        "com.linkedin.common.VectorImage"
-                    ]["rootUrl"]
-                    del item["school"]["logo"]
-
+        if data["educationView"]["paging"]["count"] < data["educationView"]["paging"]["total"]:
+            # if profile has "view more education" button, fetch a separate positions endpoint.
+            pos_res = self._fetch(f"/identity/profiles/{public_id or urn_id}/educations")
+            pos_data = pos_res.json()
+            if pos_data and "status" in pos_data and pos_data["status"] != 200:
+                self.logger.info("request failed: {}".format(pos_data["message"]))
+                pos_data = {}
+            education = pos_data.get("elements", [])
+        else:
+            education = data["positionView"]["elements"]        
         profile["education"] = education
+        
+        
+        # massage [education] data
+        # education = data["educationView"]["elements"]
+        # for item in education:
+        #     if "school" in item:
+        #         if "logo" in item["school"]:
+        #             item["school"]["logoUrl"] = item["school"]["logo"][
+        #                 "com.linkedin.common.VectorImage"
+        #             ]["rootUrl"]
+        #             del item["school"]["logo"]
+        # 
+        # profile["education"] = education
 
         # massage [languages] data
         languages = data["languageView"]["elements"]
