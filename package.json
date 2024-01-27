@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "init": "npm install && node install_py_dependencies.js",
-    "start": "node index.js"
+    "start": "node server/index.js"
   },
   "type": "module",
   "author": "",

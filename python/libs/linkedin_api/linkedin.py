@@ -697,7 +697,7 @@ class Linkedin(object):
                 pos_data = {}
             education = pos_data.get("elements", [])
         else:
-            education = data["positionView"]["elements"]        
+            education = data["educationView"]["elements"]
         profile["education"] = education
         
         
