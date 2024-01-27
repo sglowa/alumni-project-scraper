@@ -64,7 +64,7 @@ function reqFetchFromLinkedin (profileId, schoolIds) {
     setTimeout(() => {
       pyshell.removeListener('message', callback)
       reject(new Error(`timeout on: ${profileId}`))
-    }, 20000)
+    }, 45000)
   })
 }
 
