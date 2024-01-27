@@ -1,6 +1,10 @@
 node_modules
-.env
-.eslintrc.json
+__pycache__/
 temp.js
-sampleData_fake_full.json
-#
+.env
+alumni_db*.json
+log.md
+.eslintrc.json
+*.code-workspace
+.vscode
+jsconfig.json

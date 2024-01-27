@@ -1,7 +1,7 @@
 // this template object is a bit messy, perhaps i dont need it at all
 // but it would be super good to have some way of validating the fields
 
-import { fieldNotAvailableWarning } from './utils.js'
+import { fieldNotAvailableWarning } from '../utils.js'
 const numberOfJobsAfterMA = +process.env.NO_OF_JOBS_AFTER_MA
 const numberOfJobsBeforeMA = +process.env.NO_OF_JOBS_BEFORE_MA
 const shouldCountPositionsAsSeparateJobs = +process.env.EACH_POSITION_AS_JOB === 1

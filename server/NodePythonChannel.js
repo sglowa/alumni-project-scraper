@@ -1,8 +1,8 @@
 import { PythonShell } from 'python-shell'
 import path from 'path'
-import { __dirname } from './utils.js'
+import { __dirname } from '../utils.js'
 
-const pythonScriptPath = path.join(__dirname, '../python/linkedInApi.py')
+const pythonScriptPath = path.join(__dirname, 'python/linkedInApi.py')
 
 const options = {
   mode: 'json',

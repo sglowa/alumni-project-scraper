@@ -1,4 +1,4 @@
-import { __dirname } from './utils.js'
+import { __dirname } from '../utils.js'
 import path from 'path'
 import { JSONFilePreset } from 'lowdb/node'
 
