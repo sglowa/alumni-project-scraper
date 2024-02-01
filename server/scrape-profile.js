@@ -20,7 +20,8 @@ async function scrapeProfileMain (profileUrlPathname, schoolsSelectors, phd, cli
       schoolsSelectors[key] = schoolsSelectors[key].map(i => {
         const schoolId = extractSchoolId(i.url, schoolsWitohutId, schoolIds)
         const degreeTitleExcerpt = i.degreeTitleExcerpt
-        return { schoolId, degreeTitleExcerpt }
+        const gradYear = i.gradYear
+        return { schoolId, degreeTitleExcerpt, ...(gradYear ? { gradYear } : undefined) }
       })
     }
   }

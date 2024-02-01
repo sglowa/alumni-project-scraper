@@ -19,6 +19,7 @@
  * @typedef {Object} SchoolSelectors
  * @property {string} schoolId
  * @property {string} degreeTitleExcerpt
+ * @property {number} [gradYear]
  */
 
 /**

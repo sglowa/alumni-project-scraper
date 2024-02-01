@@ -173,6 +173,7 @@ function generateEduEntryFromSchoolSelector (schoolSelector, schoolsJSONs, educa
   }
   )
   const degreeData = extractDegreeData(eduEntry, degreeType)
+  if (schoolSelector.gradYear) degreeData.diploma_grad_year = schoolSelector.gradYear
   const eduEntryData = { ...schoolData, ...degreeData }
   const eduEntryDataRenamedToColumnVals = {}
   for (const key in eduEntryData) {

@@ -84,6 +84,15 @@
       id: `tampermonkey-${schoolType}InputUrl${schoolInputsArray.length}`,
       placeholder: `excerpt of title of ${schoolType} degree ${schoolInputsArray.length + 1}`
     })
+    const degreeTitleGradYear = GM_addElement(schoolInputContainer, 'input', {
+      type: 'text',
+      class: 'tampermonkey-inputGradYear',
+      id: `tampermonkey-${schoolType}InputGradYear${schoolInputsArray.length}`,
+      placeholder: `Graduation Year of ${schoolType} degree ${schoolInputsArray.length + 1}`,
+      maxlength: '4',
+      style: 'width:8ch; height:auto',
+      title: `Graduation Year of ${schoolType} degree ${schoolInputsArray.length + 1}`
+    })
     schoolInputsArray.push(schoolInputContainer)
     updateDeleteButtonState(deleteButton, schoolInputsArray)
   }
@@ -205,8 +214,10 @@
     schoolInputsArr.forEach((container, i) => {
       const inputUrl = container.querySelector('.tampermonkey-inputUrl')
       const inputExcerpt = container.querySelector('.tampermonkey-inputExcerpt')
+      const inputGradYear = container.querySelector('.tampermonkey-inputGradYear')
       const urlValue = inputUrl.value
       const excerptValue = inputExcerpt.value
+      const gradYearValue = +inputGradYear.value
 
       if (!urlValue && !excerptValue) {
         showMessageAndFadeOut(infoBox, `inputs of field ${i + 1} for ${schoolType} schools are empty, skipping}`)
@@ -216,7 +227,13 @@
         showMessageAndFadeOut(infoBox, `field ${i + 1} for ${schoolType} : can't post field without url`)
         throw new Error(`field ${i + 1} for ${schoolType} : can't post field without url`)
       }
-      schoolSelectors.push({ url: urlValue, degreeTitleExcerpt: excerptValue })
+
+      if (gradYearValue !== 0 && (isNaN(gradYearValue) || (gradYearValue + '').length !== 4)) {
+        const gradYearError = `field ${i + 1} for ${schoolType} : year should be a for digit number`
+        showMessageAndFadeOut(infoBox, gradYearError)
+        throw new Error(gradYearError)
+      }
+      schoolSelectors.push({ url: urlValue, degreeTitleExcerpt: excerptValue, ...(gradYearValue !== 0 ? { gradYear: gradYearValue } : undefined) })
     })
     return schoolSelectors
   }
